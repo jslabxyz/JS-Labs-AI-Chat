@@ -14,6 +14,14 @@ A powerful, context-aware AI shopping assistant for Shopify stores powered by Op
 
 ## 🛠 Technology Stack
 
+### Programming Languages
+- **JavaScript**: Primary language for backend and frontend logic (`mcp-client.js`, `openai.server.js`, `enhanced-chat-widget.html`)
+- **JSX**: React components and Remix routes (`chat.jsx`, `app/root.jsx`)
+- **CSS**: Styling and responsive design (`styles.module.css`, embedded styles)
+- **Liquid**: Shopify theme extension blocks (`chat-interface.liquid`)
+- **TypeScript**: Type definitions and enhanced development experience (`env.d.ts`)
+
+### Frameworks & Tools
 - **Backend**: Remix (React framework)
 - **AI**: OpenAI GPT-4 with function calling
 - **Database**: SQLite with Prisma ORM
