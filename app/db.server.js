@@ -1,12 +1,37 @@
 import { PrismaClient } from "@prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
 
+// Configure Prisma client based on environment
+const getPrismaClient = () => {
+  const isDev = process.env.NODE_ENV !== "production";
+  const isDataProxy = process.env.PRISMA_GENERATE_DATAPROXY === "true";
+  const accelerateApiKey = process.env.ACCELERATE_API_KEY;
+  
+  const clientConfig = {};
+  
+  // Add data proxy configuration for Prisma Cloud
+  if (isDataProxy) {
+    clientConfig.log = ['query', 'info', 'warn', 'error'];
+  }
+  
+  const client = new PrismaClient(clientConfig);
+  
+  // Add Prisma Accelerate for caching and connection pooling
+  if (accelerateApiKey && process.env.NODE_ENV === "production") {
+    return client.$extends(withAccelerate());
+  }
+  
+  return client;
+};
+
+// Use global instance in development to prevent connection issues
 if (process.env.NODE_ENV !== "production") {
   if (!global.prismaGlobal) {
-    global.prismaGlobal = new PrismaClient();
+    global.prismaGlobal = getPrismaClient();
   }
 }
 
-const prisma = global.prismaGlobal ?? new PrismaClient();
+const prisma = global.prismaGlobal ?? getPrismaClient();
 
 export default prisma;
 
