@@ -7,7 +7,7 @@ import MCPClient from "../mcp-client";
 import { saveMessage, getConversationHistory, storeCustomerAccountUrl, getCustomerAccountUrl } from "../db.server";
 import AppConfig from "../services/config.server";
 import { createSseStream } from "../services/streaming.server";
-import { createClaudeService } from "../services/claude.server";
+import { createOpenAIService } from "../services/openai.server";
 import { createToolService } from "../services/tool.server";
 import { unauthenticated } from "../shopify.server";
 
@@ -75,6 +75,7 @@ async function handleChatRequest(request) {
     // Get message data from request body
     const body = await request.json();
     const userMessage = body.message;
+    const context = body.context || {};
 
     // Validate required message
     if (!userMessage) {
@@ -95,6 +96,7 @@ async function handleChatRequest(request) {
         userMessage,
         conversationId,
         promptType,
+        context,
         stream
       });
     });
@@ -125,10 +127,11 @@ async function handleChatSession({
   userMessage,
   conversationId,
   promptType,
+  context,
   stream
 }) {
   // Initialize services
-  const claudeService = createClaudeService();
+  const openaiService = createOpenAIService();
   const toolService = createToolService();
 
   // Initialize MCP client
@@ -163,8 +166,13 @@ async function handleChatSession({
     let conversationHistory = [];
     let productsToDisplay = [];
 
+    // Create enhanced user message with context
+    const enhancedUserMessage = context.page ? 
+      `${userMessage}\n\n[Page Context: Currently on ${context.page.page_type} page${context.page.product_title ? ` viewing "${context.page.product_title}"` : ''}${context.page.collection_handle ? ` in collection "${context.page.collection_handle}"` : ''}${context.page.search_query ? ` searching for "${context.page.search_query}"` : ''}]` :
+      userMessage;
+
     // Save user message to the database
-    await saveMessage(conversationId, 'user', userMessage);
+    await saveMessage(conversationId, 'user', enhancedUserMessage);
 
     // Fetch all messages from the database for this conversation
     const dbMessages = await getConversationHistory(conversationId);
@@ -187,7 +195,7 @@ async function handleChatSession({
     let finalMessage = { role: 'user', content: userMessage };
 
     while (finalMessage.stop_reason !== "end_turn") {
-      finalMessage = await claudeService.streamConversation(
+      finalMessage = await openaiService.streamConversation(
         {
           messages: conversationHistory,
           promptType,

@@ -1,0 +1,482 @@
+<!-- JSlabs AI Chat Widget with OpenAI - Add this before </body> in theme.liquid -->
+<style>
+:root {
+  --viewport-height: 100vh;
+}
+
+.shop-ai-chat-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.shop-ai-chat-bubble {
+  width: 60px;
+  height: 60px;
+  background-color: #5046e4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.shop-ai-chat-bubble:hover {
+  transform: scale(1.05);
+}
+
+.shop-ai-chat-bubble svg {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.shop-ai-chat-window {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  width: 90vw;
+  max-width: 450px;
+  height: 70vh;
+  height: calc(var(--viewport-height, 100vh) * 0.7);
+  max-height: 650px;
+  min-height: 350px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.shop-ai-chat-window.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateY(0);
+}
+
+.shop-ai-chat-header {
+  padding: 16px;
+  background-color: #5046e4;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-ai-chat-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 0;
+  line-height: 1;
+}
+
+.shop-ai-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.shop-ai-message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.shop-ai-message.assistant {
+  align-self: flex-start;
+  background-color: #f1f1f1;
+  border-bottom-left-radius: 4px;
+}
+
+.shop-ai-message.assistant a {
+  color: #5046e4;
+  text-decoration: underline;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.shop-ai-message.user {
+  align-self: flex-end;
+  background-color: #5046e4;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.shop-ai-chat-input {
+  border-top: 1px solid #e9e9e9;
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.shop-ai-chat-input input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #e9e9e9;
+  border-radius: 24px;
+  font-size: 14px;
+  outline: none;
+  min-height: 24px;
+}
+
+.shop-ai-chat-input input:focus {
+  border-color: #5046e4;
+}
+
+.shop-ai-chat-send {
+  background-color: #5046e4;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.shop-ai-typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background-color: #f1f1f1;
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+  font-size: 14px;
+}
+
+.shop-ai-typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #606060;
+  display: inline-block;
+  animation: typing 1.4s infinite both;
+}
+
+.shop-ai-typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.shop-ai-typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .shop-ai-chat-window {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    height: calc(var(--viewport-height, 100vh));
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-width: none;
+    min-height: 100vh;
+    min-height: calc(var(--viewport-height, 100vh));
+    border-radius: 0;
+    transform: translateY(100%);
+    z-index: 999999;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+  }
+  
+  .shop-ai-chat-window.active {
+    transform: translateY(0);
+  }
+  
+  .shop-ai-chat-container {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .shop-ai-chat-bubble {
+    width: 50px;
+    height: 50px;
+    z-index: 1000000;
+    position: relative;
+  }
+  
+  .shop-ai-chat-bubble svg {
+    width: 25px;
+    height: 25px;
+  }
+}
+</style>
+
+<div class="shop-ai-chat-container">
+  <div class="shop-ai-chat-bubble">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </div>
+
+  <div class="shop-ai-chat-window">
+    <div class="shop-ai-chat-header">
+      <div>AI Chat Assistant</div>
+      <button class="shop-ai-chat-close">✕</button>
+    </div>
+
+    <div class="shop-ai-chat-messages">
+      <!-- Messages will be added here by JavaScript -->
+    </div>
+
+    <div class="shop-ai-chat-input">
+      <input type="text" placeholder="Type your message...">
+      <button class="shop-ai-chat-send">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // Configuration
+  window.shopChatConfig = {
+    promptType: 'standardAssistant',
+    welcomeMessage: '👋 Hi there! How can I help you today?'
+  };
+  window.shopId = '{{ shop.id }}';
+
+  // Chat functionality
+  const ShopAIChat = {
+    UI: {
+      elements: {},
+      
+      init: function(container) {
+        if (!container) return;
+        
+        this.elements = {
+          container: container,
+          chatBubble: container.querySelector('.shop-ai-chat-bubble'),
+          chatWindow: container.querySelector('.shop-ai-chat-window'),
+          closeButton: container.querySelector('.shop-ai-chat-close'),
+          chatInput: container.querySelector('.shop-ai-chat-input input'),
+          sendButton: container.querySelector('.shop-ai-chat-send'),
+          messagesContainer: container.querySelector('.shop-ai-chat-messages')
+        };
+        
+        this.setupEventListeners();
+        this.showWelcomeMessage();
+      },
+      
+      setupEventListeners: function() {
+        const { chatBubble, closeButton, chatInput, sendButton } = this.elements;
+        
+        chatBubble.addEventListener('click', () => this.toggleChatWindow());
+        closeButton.addEventListener('click', () => this.closeChatWindow());
+        
+        chatInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+            ShopAIChat.Message.send(chatInput, this.elements.messagesContainer);
+          }
+        });
+        
+        sendButton.addEventListener('click', () => {
+          if (chatInput.value.trim() !== '') {
+            ShopAIChat.Message.send(chatInput, this.elements.messagesContainer);
+          }
+        });
+      },
+      
+      toggleChatWindow: function() {
+        const { chatWindow, chatInput } = this.elements;
+        chatWindow.classList.toggle('active');
+        if (chatWindow.classList.contains('active')) {
+          chatInput.focus();
+          this.scrollToBottom();
+        }
+      },
+      
+      closeChatWindow: function() {
+        this.elements.chatWindow.classList.remove('active');
+      },
+      
+      scrollToBottom: function() {
+        const { messagesContainer } = this.elements;
+        setTimeout(() => {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
+      },
+      
+      showWelcomeMessage: function() {
+        const welcomeMessage = window.shopChatConfig?.welcomeMessage || "👋 Hi there! How can I help you today?";
+        ShopAIChat.Message.add(welcomeMessage, 'assistant', this.elements.messagesContainer);
+      },
+      
+      showTypingIndicator: function() {
+        const { messagesContainer } = this.elements;
+        const typingIndicator = document.createElement('div');
+        typingIndicator.classList.add('shop-ai-typing-indicator');
+        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+        messagesContainer.appendChild(typingIndicator);
+        this.scrollToBottom();
+      },
+      
+      removeTypingIndicator: function() {
+        const typingIndicator = this.elements.messagesContainer.querySelector('.shop-ai-typing-indicator');
+        if (typingIndicator) {
+          typingIndicator.remove();
+        }
+      }
+    },
+    
+    Message: {
+      add: function(text, sender, messagesContainer) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('shop-ai-message', sender);
+        messageElement.textContent = text;
+        messagesContainer.appendChild(messageElement);
+        ShopAIChat.UI.scrollToBottom();
+        return messageElement;
+      },
+      
+      send: async function(chatInput, messagesContainer) {
+        const userMessage = chatInput.value.trim();
+        
+        // Add user message to chat
+        this.add(userMessage, 'user', messagesContainer);
+        chatInput.value = '';
+        
+        // Show typing indicator
+        ShopAIChat.UI.showTypingIndicator();
+        
+        try {
+          // Make API call to your chat endpoint - Updated URL for new port
+          const response = await fetch('http://localhost:3459/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'text/event-stream',
+              'X-Shopify-Shop-Id': window.shopId,
+              'Origin': window.location.origin
+            },
+            body: JSON.stringify({
+              message: userMessage,
+              conversation_id: sessionStorage.getItem('shopAiConversationId'),
+              prompt_type: window.shopChatConfig?.promptType || "standardAssistant"
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          
+          // Handle streaming response
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let currentMessageText = '';
+          let currentMessageElement = null;
+          
+          ShopAIChat.UI.removeTypingIndicator();
+          
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop() || '';
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  
+                  if (data.type === 'id' && data.conversation_id) {
+                    sessionStorage.setItem('shopAiConversationId', data.conversation_id);
+                  } else if (data.type === 'chunk') {
+                    if (!currentMessageElement) {
+                      currentMessageElement = this.add('', 'assistant', messagesContainer);
+                    }
+                    currentMessageText += data.chunk;
+                    currentMessageElement.textContent = currentMessageText;
+                    ShopAIChat.UI.scrollToBottom();
+                  } else if (data.type === 'message_complete') {
+                    // Message is complete
+                  } else if (data.type === 'error') {
+                    ShopAIChat.UI.removeTypingIndicator();
+                    this.add("Sorry, I couldn't process your request. Please try again.", 'assistant', messagesContainer);
+                  }
+                } catch (e) {
+                  console.error('Error parsing stream data:', e);
+                }
+              }
+            }
+          }
+          
+        } catch (error) {
+          console.error('Error communicating with chat API:', error);
+          ShopAIChat.UI.removeTypingIndicator();
+          this.add("Sorry, I'm having trouble connecting right now. Please try again later.", 'assistant', messagesContainer);
+        }
+      }
+    },
+    
+    init: function() {
+      const container = document.querySelector('.shop-ai-chat-container');
+      if (container) {
+        this.UI.init(container);
+      }
+    }
+  };
+  
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      ShopAIChat.init();
+    });
+  } else {
+    ShopAIChat.init();
+  }
+})();
+</script>
