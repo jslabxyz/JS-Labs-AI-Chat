@@ -1,4 +1,4 @@
-# Build an AI Agent for Your Storefront
+# Build an AI Agent for Shopify
 
 A Shopify template app that lets you embed an AI-powered chat widget on your storefront. Shoppers can search for products, ask about policies or shipping, and complete purchases - all without leaving the conversation. Under the hood it speaks the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) to tap into Shopify’s APIs.
 
@@ -25,19 +25,6 @@ A Shopify template app that lets you embed an AI-powered chat widget on your sto
 - `Show me my recent orders` > will use the `get_most_recent_order_status` MCP tool.
 - `Can you give me more details about order Id 1` > will use the `get_order_status` MCP tool.
 
-## Architecture
-
-### Components
-This app consists of two main components:
-
-1. **Backend**: A Remix app server that handles communication with Claude, processes chat messages, and acts as an MCP Client.
-2. **Chat UI**: A Shopify theme extension that provides the customer-facing chat interface.
-
-When you start the app, it will:
-- Start Remix in development mode.
-- Tunnel your local server so Shopify can reach it.
-- Provide a preview URL to install the app on your development store.
-
 For direct testing, point your test suite at the `/chat` endpoint (GET or POST for streaming).
 
 ### MCP Tools Integration
@@ -47,7 +34,7 @@ For direct testing, point your test suite at the `/chat` endpoint (GET or POST f
 
 ### Tech Stack
 - **Framework**: [Remix](https://remix.run/)
-- **AI**: [Claude by Anthropic](https://www.anthropic.com/claude)
+- **AI**: [Open AI](https://www.openai.com)
 - **Shopify Integration**: [@shopify/shopify-app-remix](https://www.npmjs.com/package/@shopify/shopify-app-remix)
 - **Database**: SQLite (via Prisma) for session storage
 
